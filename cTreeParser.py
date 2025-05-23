@@ -514,8 +514,8 @@ if __name__ == "__main__":
                 code = file.read()
                 tree = build_tree(code)
                 if tree:
-                    from ast_visualizer import print_ast
-                    print_ast(tree)
+                    from ast_visualizer import visualize_ast
+                    visualize_ast(tree)
         except UnicodeDecodeError:
             print("Ошибка: файл должен быть в кодировке UTF-8")
         except FileNotFoundError:
