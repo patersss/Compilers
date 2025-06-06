@@ -42,7 +42,7 @@ int main() {
     }
     
     if (x >= 5) {
-        
+        int u = 10;
         cout << "x is greater than or equal to 5" << endl;
     }
     u = 8;

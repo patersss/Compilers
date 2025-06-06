@@ -23,6 +23,7 @@ class Scope:
         self.variables: Dict[str, Variable] = {}
         self.parent = parent
         self.level = 0 if parent is None else parent.level + 1
+        self.is_block_scope = False  # Флаг для блоков if, while и т.д.
 
     def add_variable(self, var: Variable) -> bool:
         if var.name in self.variables:
@@ -37,6 +38,17 @@ class Scope:
         if self.parent:
             return self.parent.get_variable(name)
         return None
+
+    def is_variable_accessible(self, name: str) -> bool:
+        """Проверяет, доступна ли переменная в текущей области видимости"""
+        var = self.get_variable(name)
+        if not var:
+            return False
+        # Если переменная объявлена в блоке (if, while и т.д.), 
+        # то она доступна только внутри этого блока
+        if var.scope_level > self.level:
+            return False
+        return True
 
 class SemanticError(Exception):
     def __init__(self, message: str, line: int = None):
@@ -144,6 +156,7 @@ class SemanticAnalyzer:
     def visit_ForNode(self, node: ForNode):
         old_scope = self.current_scope
         self.current_scope = Scope(old_scope)
+        self.current_scope.is_block_scope = True
         old_in_loop = self.in_loop
         self.in_loop = True
         self.visit(node.init)
@@ -156,6 +169,7 @@ class SemanticAnalyzer:
     def visit_WhileNode(self, node: WhileNode):
         old_scope = self.current_scope
         self.current_scope = Scope(old_scope)
+        self.current_scope.is_block_scope = True
         old_in_loop = self.in_loop
         self.in_loop = True
         self.visit(node.cond)
@@ -166,6 +180,7 @@ class SemanticAnalyzer:
     def visit_DoWhileNode(self, node: DoWhileNode):
         old_scope = self.current_scope
         self.current_scope = Scope(old_scope)
+        self.current_scope.is_block_scope = True
         old_in_loop = self.in_loop
         self.in_loop = True
         self.visit(node.body)
@@ -173,24 +188,35 @@ class SemanticAnalyzer:
         self.current_scope = old_scope
         self.in_loop = old_in_loop
 
-    def visit_IdentNode(self, node: IdentNode):
-        if not hasattr(node, 'name'):
-            self.errors.append(SemanticError("Некорректный идентификатор"))
-            return
-        var = self.current_scope.get_variable(node.name)
-        if not var and node.name not in self.known_system_identifiers:
-            self.errors.append(SemanticError(f"Использование необъявленной переменной: {node.name}"))
-        elif self.in_loop and var and var.scope_level > self.current_scope.level:
-            self.errors.append(SemanticError(f"Попытка доступа к переменной {node.name} из цикла вне её области видимости"))
+    def visit_IfNode(self, node: IfNode):
+        old_scope = self.current_scope
+        self.current_scope = Scope(old_scope)
+        self.current_scope.is_block_scope = True
+        self.visit(node.cond)
+        self.visit(node.then_)
+        if node.else_:
+            self.visit(node.else_)
+        self.current_scope = old_scope
 
     def visit_AssignNode(self, node: AssignNode):
         if isinstance(node.var, IdentNode):
             var = self.current_scope.get_variable(node.var.name)
             if not var:
                 self.errors.append(SemanticError(f"Присваивание необъявленной переменной: {node.var.name}"))
-            elif self.in_loop and var.scope_level > self.current_scope.level:
-                self.errors.append(SemanticError(f"Попытка присваивания переменной {node.var.name} из цикла вне её области видимости"))
+            elif not self.current_scope.is_variable_accessible(node.var.name):
+                self.errors.append(SemanticError(f"Попытка доступа к переменной {node.var.name} вне её области видимости (переменная объявлена в блоке if/while/for)"))
         self.visit(node.val)
+
+    def visit_IdentNode(self, node: IdentNode):
+        if not hasattr(node, 'name'):
+            self.errors.append(SemanticError("Некорректный идентификатор"))
+            return
+        if node.name not in self.known_system_identifiers:
+            var = self.current_scope.get_variable(node.name)
+            if not var:
+                self.errors.append(SemanticError(f"Использование необъявленной переменной: {node.name}"))
+            elif not self.current_scope.is_variable_accessible(node.name):
+                self.errors.append(SemanticError(f"Попытка доступа к переменной {node.name} вне её области видимости (переменная объявлена в блоке if/while/for)"))
 
     def visit_FunctionCallNode(self, node: FunctionCallNode):
         for arg in node.args:
