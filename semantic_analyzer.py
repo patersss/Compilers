@@ -60,7 +60,8 @@ class SemanticError(Exception):
 
 class SemanticAnalyzer:
     def __init__(self):
-        self.current_scope = Scope()
+        self.global_scope = Scope()  # Глобальная область видимости
+        self.current_scope = self.global_scope
         self.errors: List[SemanticError] = []
         self.in_loop = False
         self.in_function = False
@@ -268,8 +269,23 @@ class SemanticAnalyzer:
             self.visit(node.value)
         
         var = Variable(var_name, var_type, is_global=not self.in_function)
-        if not self.current_scope.add_variable(var):
-            self.errors.append(SemanticError(f"Переменная {var_name} уже объявлена в текущей области видимости"))
+        
+        # Проверяем дублирование переменных
+        if not self.in_function:
+            # Глобальная переменная
+            if not self.global_scope.add_variable(var):
+                self.errors.append(SemanticError(f"Глобальная переменная {var_name} уже объявлена"))
+        else:
+            # Локальная переменная
+            # Проверяем, есть ли глобальная переменная с таким же именем
+            global_var = self.global_scope.get_variable(var_name)
+            if global_var:
+                # Это допустимо - локальная переменная перекрывает глобальную
+                pass
+            
+            # Добавляем в текущую область видимости
+            if not self.current_scope.add_variable(var):
+                self.errors.append(SemanticError(f"Переменная {var_name} уже объявлена в текущей области видимости"))
 
     def visit_ForNode(self, node: ForNode):
         old_scope = self.current_scope
@@ -342,8 +358,13 @@ class SemanticAnalyzer:
         if isinstance(node.var, IdentNode):
             var = self.current_scope.get_variable(node.var.name)
             if not var:
-                self.errors.append(SemanticError(f"Присваивание необъявленной переменной: {node.var.name}"))
-            elif not self.current_scope.is_variable_accessible(node.var.name):
+                # Проверяем глобальную область видимости
+                var = self.global_scope.get_variable(node.var.name)
+                if not var:
+                    self.errors.append(SemanticError(f"Присваивание необъявленной переменной: {node.var.name}"))
+                    return
+            
+            if not self.current_scope.is_variable_accessible(node.var.name):
                 self.errors.append(SemanticError(f"Попытка доступа к переменной {node.var.name} вне её области видимости"))
             else:
                 # Проверяем тип присваиваемого значения
@@ -351,22 +372,25 @@ class SemanticAnalyzer:
                 if value_type:
                     if var.type == VariableType.ARRAY:
                         self.errors.append(SemanticError(f"Невозможно присвоить значение массиву {node.var.name}"))
-                    elif not self._can_convert_type(value_type, var.type):
+                    elif value_type != var.type:
                         self.errors.append(SemanticError(
                             f"Несоответствие типов при присваивании: переменная типа {var.type.value}, "
-                            f"значение типа {value_type.value} (нет допустимого приведения типов)"
+                            f"значение типа {value_type.value}"
                         ))
         elif isinstance(node.var, ArrayAccessNode):
             array_var = self.current_scope.get_variable(node.var.array.name)
+            if not array_var:
+                array_var = self.global_scope.get_variable(node.var.array.name)
+            
             if not array_var or array_var.type != VariableType.ARRAY:
                 self.errors.append(SemanticError(f"Некорректный доступ к массиву: {node.var.array.name}"))
                 return
                 
             value_type = self._get_expression_type(node.val)
-            if value_type and not self._can_convert_type(value_type, array_var.array_type):
+            if value_type and value_type != array_var.array_type:
                 self.errors.append(SemanticError(
                     f"Несоответствие типов при присваивании элементу массива: "
-                    f"ожидался {array_var.array_type.value}, получен {value_type.value} (нет допустимого приведения типов)"
+                    f"ожидался {array_var.array_type.value}, получен {value_type.value}"
                 ))
         
         self.visit(node.val)
@@ -380,8 +404,13 @@ class SemanticAnalyzer:
         if node.name not in self.known_system_identifiers:
             var = self.current_scope.get_variable(node.name)
             if not var:
-                self.errors.append(SemanticError(f"Использование необъявленной переменной: {node.name}"))
-            elif not self.current_scope.is_variable_accessible(node.name):
+                # Проверяем глобальную область видимости
+                var = self.global_scope.get_variable(node.name)
+                if not var:
+                    self.errors.append(SemanticError(f"Использование необъявленной переменной: {node.name}"))
+                    return
+            
+            if not self.current_scope.is_variable_accessible(node.name) and not var.is_global:
                 self.errors.append(SemanticError(f"Попытка доступа к переменной {node.name} вне её области видимости (переменная объявлена в блоке if/while/for)"))
 
     def visit_FunctionCallNode(self, node: FunctionCallNode):
@@ -419,6 +448,10 @@ class SemanticAnalyzer:
 
     def visit_ArrayAccessNode(self, node: ArrayAccessNode):
         var = self.current_scope.get_variable(node.array.name)
+        if not var:
+            # Проверяем глобальную область видимости
+            var = self.global_scope.get_variable(node.array.name)
+        
         if not var:
             self.errors.append(SemanticError(f"Использование необъявленного массива: {node.array.name}"))
             return
@@ -465,8 +498,15 @@ class SemanticAnalyzer:
         var.array_type = array_type
         var.array_size = size
         
-        if not self.current_scope.add_variable(var):
-            self.errors.append(SemanticError(f"Массив {name} уже объявлен в текущей области видимости"))
+        # Проверяем дублирование массивов
+        if not self.in_function:
+            # Глобальный массив
+            if not self.global_scope.add_variable(var):
+                self.errors.append(SemanticError(f"Глобальный массив {name} уже объявлен"))
+        else:
+            # Локальный массив
+            if not self.current_scope.add_variable(var):
+                self.errors.append(SemanticError(f"Массив {name} уже объявлен в текущей области видимости"))
         
         # Проверяем инициализацию массива
         if node.init:
@@ -539,6 +579,9 @@ class SemanticAnalyzer:
             return VariableType.CHAR
         elif isinstance(node, IdentNode):
             var = self.current_scope.get_variable(node.name)
+            if not var:
+                # Проверяем глобальную область видимости
+                var = self.global_scope.get_variable(node.name)
             return var.type if var else None
         elif isinstance(node, BinOpNode):
             left_type = self._get_expression_type(node.arg1)

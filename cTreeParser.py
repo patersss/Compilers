@@ -125,19 +125,52 @@ lexer = lex.lex()
 
 
 def p_program(t):
-    '''program : function_list'''
+    '''program : global_declarations'''
     t[0] = t[1]
 
 
-def p_function_list(t):
-    '''function_list : function
-                    | function_list function'''
+def p_global_declarations(t):
+    '''global_declarations : global_declaration
+                          | global_declarations global_declaration'''
     if len(t) == 2:
         t[0] = ExprListNode()
         t[0].add_child(t[1])
     else:
         t[0] = t[1]
         t[0].add_child(t[2])
+
+
+def p_global_declaration(t):
+    '''global_declaration : function
+                         | global_variable
+                         | global_array_declaration
+                         | global_assignment'''
+    t[0] = t[1]
+
+
+def p_global_variable(t):
+    '''global_variable : type ident SEMICOLON
+                      | type ident ASSIGN logical_expression SEMICOLON
+                      | type ident ASSIGN function_call SEMICOLON'''
+    if len(t) == 4:
+        t[0] = IdentificationNode(t[1], t[2])
+    else:
+        t[0] = IdentificationNode(t[1], t[2], t[4])
+
+
+def p_global_array_declaration(t):
+    '''global_array_declaration : type ident LBRACKET NUMBER RBRACKET SEMICOLON
+                                | type ident LBRACKET NUMBER RBRACKET ASSIGN array_init SEMICOLON'''
+    if len(t) > 7:
+        t[0] = ArrayDeclarationNode(t[1], t[2], t[4], t[7])
+    else:
+        t[0] = ArrayDeclarationNode(t[1], t[2], t[4])
+
+
+def p_global_assignment(t):
+    '''global_assignment : ident ASSIGN logical_expression SEMICOLON
+                        | ident ASSIGN function_call SEMICOLON'''
+    t[0] = AssignNode(t[1], t[3])
 
 
 def p_function(t):
@@ -179,7 +212,7 @@ def p_statement(t):
                  | block
                  | selection_statement
                  | iteration_statement
-                 | array_declaration
+                 | local_array_declaration
                  | return_statement
                  | input_statement
                  | output_statement'''
@@ -445,9 +478,9 @@ def p_expression_number(t):
     t[0] = NumNode(t[1])
 
 
-def p_array_declaration(t):
-    '''array_declaration : type ident LBRACKET NUMBER RBRACKET
-                        | type ident LBRACKET NUMBER RBRACKET ASSIGN array_init'''
+def p_local_array_declaration(t):
+    '''local_array_declaration : type ident LBRACKET NUMBER RBRACKET
+                               | type ident LBRACKET NUMBER RBRACKET ASSIGN array_init'''
     if len(t) > 6:
         t[0] = ArrayDeclarationNode(t[1], t[2], t[4], t[7])
     else:
