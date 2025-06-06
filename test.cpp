@@ -18,12 +18,13 @@ int modulo(int a, int b) {
     return a % b;
 }
 
+
 int main() {
     
     int x = 5;
     char c = 'A';
     bool b = true;
-    
+    int x = 10; // Ошибка: повторное объявление x
     
     int arr[5] = {1, 2, 3, 4, 5};
     char chars[3] = {'a', 'b', 'c'};
@@ -41,8 +42,10 @@ int main() {
     }
     
     if (x >= 5) {
+        
         cout << "x is greater than or equal to 5" << endl;
     }
+    u = 8;
     
     if (x < 10) {
         cout << "x is less than 10" << endl;
@@ -59,6 +62,8 @@ int main() {
     
     if (!b) {
         cout << "b is false" << endl;
+    } else {
+        cout << "test" << endl;
     }
     
     
@@ -67,9 +72,10 @@ int main() {
     }
     
     while (x > 0) {
+        char ooo = 'Y';
         x = x - 1;
     }
-    
+    ooo = 'N';
     do {
         x = x + 1;
     } while (x < 5);
@@ -85,7 +91,9 @@ int main() {
     cin >> x;
     cout << x << endl;
     
-    
+    //asdfsadfas
+    /* asdfas
+    */
     int sum = add(5, 3);
     int diff = subtract(10, 4);
     int prod = multiply(6, 7);

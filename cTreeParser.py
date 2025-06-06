@@ -71,13 +71,13 @@ t_ignore = ' \r\t'
 
 def t_CHAR_LITERAL(t):
     r"'[^'\\]'"
-    t.value = t.value[1:-1]  # Убираем кавычки
+    t.value = t.value[1:-1]
     return t
 
 
 def t_STRING(t):
     r'"[^"]*"'
-    t.value = t.value[1:-1]  # Убираем кавычки
+    t.value = t.value[1:-1]
     return t
 
 
@@ -159,7 +159,7 @@ def p_param_list(t):
 
 def p_param_decl(t):
     'param_decl : type IDENT'
-    t[0] = ParameterNode(t[1], t[2])
+    t[0] = ParameterNode(t[1], IdentNode(t[2]))
 
 
 def p_expr_list(t):
@@ -239,9 +239,9 @@ def p_arg_list(t):
     if len(t) == 1:
         t[0] = []
     elif len(t) == 2:
-        t[0] = [t[1]]
+        t[0] = [t[1]] if isinstance(t[1], AstNode) else []
     else:
-        t[0] = t[1] + [t[3]]
+        t[0] = t[1] + ([t[3]] if isinstance(t[3], AstNode) else [])
 
 
 def p_logical_expression(t):
@@ -458,10 +458,12 @@ def p_array_elements(t):
                      | array_elements COMMA expression'''
     if len(t) > 2:
         t[0] = t[1]
-        t[0].add_child(t[3])
+        if isinstance(t[3], AstNode):
+            t[0].add_child(t[3])
     else:
         t[0] = ArrayElementsNode()
-        t[0].add_child(t[1])
+        if isinstance(t[1], AstNode):
+            t[0].add_child(t[1])
 
 
 def p_array_access(t):

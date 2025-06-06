@@ -1,20 +1,21 @@
 from ast_nodes import *
 
+
 def print_ast(node, prefix="", is_last=True):
-    """
-    Рекурсивно выводит AST с линиями для связи узлов
-    """
     if node is None:
         return
 
-    # Определяем символы для отображения связей
     connector = "└── " if is_last else "├── "
     line = "    " if is_last else "│   "
-    
-    # Выводим текущий узел с его типом и значением
+
+    # Если это не AstNode, просто выводим значение
+    if not isinstance(node, AstNode):
+        print(f"{prefix}{connector}{repr(node)}")
+        return
+
     node_type = node.__class__.__name__
     node_str = str(node)
-    
+
     if node_type == "ExprListNode":
         print(f"{prefix}{connector}ExprList")
     elif node_type == "FunctionNode":
@@ -61,22 +62,20 @@ def print_ast(node, prefix="", is_last=True):
         print(f"{prefix}{connector}IncrementDecrement: {node.op}")
     elif node_type == "SystemFunctionNode":
         print(f"{prefix}{connector}SystemFunction: {node.func_name}")
+    elif node_type == "FunctionCallNode":
+        print(f"{prefix}{connector}call {node.name}")
     else:
         print(f"{prefix}{connector}{node_str}")
-    
-    # Получаем дочерние узлы
+
     children = node.childs if hasattr(node, 'childs') else []
-    
-    # Рекурсивно выводим дочерние узлы
+
     for i, child in enumerate(children):
         is_last_child = i == len(children) - 1
         print_ast(child, prefix + line, is_last_child)
 
+
 def visualize_ast(node):
-    """
-    Запускает визуализацию AST
-    """
     print("\nАбстрактное синтаксическое дерево:")
     print("=" * 50)
     print_ast(node)
-    print("=" * 50) 
+    print("=" * 50)
