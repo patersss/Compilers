@@ -1,104 +1,93 @@
+// Простая функция для сложения двух чисел
 int add(int a, int b) {
     return a + b;
 }
 
-int subtract(int a, int b) {
-    return a - b;
-}
-
-int multiply(int a, int b) {
-    return a * b;
-}
-
-int divide(int a, int b) {
-    return a / b;
-}
-
-int modulo(int a, int b) {
-    return a % b;
+// // Функция для проверки четности числа
+bool isEven(int num) {
+    return num % 2 == 0;
 }
 
 
-int main() {
+// // Функция с параметрами разных типов
+int processValues(int x, char c, bool b) {
+    // Проверка бинарных операций
+    int result1 = x + 5;        // OK: int + int
+    char result2 = c + 1;       // OK: char + int
     
-    int x = 5;
-    char c = 'A';
-    bool b = true;
-    int x = 10; // Ошибка: повторное объявление x
+    // Проверка присваиваний
+    int num = 10;               // OK: int = int
+    char ch = 'A';             // OK: char = char
+    bool flag = true;          // OK: bool = bool
     
-    int arr[5] = {1, 2, 3, 4, 5};
-    char chars[3] = {'a', 'b', 'c'};
+    // Проверка массивов
+    int arr1[5] = {1, 2, 3, 4, 5};     // OK: правильная инициализация
+    char arr2[3] = {'a', 'b', 'c'};    // OK: правильная инициализация
+    bool arr3[2] = {true, false};      // OK: правильная инициализация
     
-    
-    x = x + 1;
-    x = x - 1;
-    x = x * 2;
-    x = x / 2;
-    x = x % 3;
-    
-    
+    return result1;
+}
+
+// // Функция для проверки условных операторов
+void checkConditions(int x, char c) {
+    // Проверка if
     if (x > 0) {
-        cout << "x is positive" << endl;
+        int local = x;
     }
     
-    if (x >= 5) {
-        int u = 10;
-        cout << "x is greater than or equal to 5" << endl;
-    }
-    u = 8;
-    
-    if (x < 10) {
-        cout << "x is less than 10" << endl;
-    }
-    
-    if (x <= 5) {
-        cout << "x is less than or equal to 5" << endl;
-    }
-    
-    
-    if (x > 0 && x < 10) {
-        cout << "x is between 0 and 10" << endl;
-    }
-    
-    if (!b) {
-        cout << "b is false" << endl;
-    } else {
-        cout << "test" << endl;
-    }
-    
-    
-    for (int i = 0; i < 5; i++) {
-        cout << arr[i] << endl;
-    }
-    
+    // Проверка while
     while (x > 0) {
-        char ooo = 'Y';
         x = x - 1;
     }
-    ooo = 'N';
-    do {
-        x = x + 1;
-    } while (x < 5);
+    
+    // Проверка for
+    for (int i = 0; i < 5; i++) {
+        char ch = 'a' + i;
+    }
+}
+
+int main() {
+    // Объявление переменных
+    int x = 10;
+    int y = 5;
+    char c = 'A';
+    bool b = true;
+    
+    // Работа с массивами
+    int numbers[5] = {1, 2, 3, 4, 5};
+    char chars[3] = {'a', 'b', 'c'};
+    
+    // Арифметические операции
+    int sum = x + y;
+    int diff = x - y;
+    int mult = x * y;
+    int div = x / y;
+    
+    // Логические операции
+    bool result1 = x > y;
+    bool result2 = x == y;
+    
+    // Условный оператор
+    if (x > y) {
+        int temp = x;
+        x = y;
+        y = temp;
+    }
+    
+    // Цикл while
+    while (x > 0) {
+        x = x - 1;
+    }
     
     
-    x++;
-    x--;
     
+    // Вызов функций
+    int total = add(x, y);
+    bool even = isEven(x);
     
-    x = abs(-5);
-    
-    
-    cin >> x;
-    cout << x << endl;
-    
-    //asdfsadfas
-    /* asdfas
-    */
-    int sum = add(5, 3);
-    int diff = subtract(10, 4);
-    int prod = multiply(6, 7);
-    int quot = divide(20, 4);
-    int mod = modulo(17, 5);
+    // Вызов функций
+    int result = processValues(x, c, b);
+    checkConditions(x, c);
     
     return 0;
 }

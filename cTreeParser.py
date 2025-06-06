@@ -28,6 +28,7 @@ reserved = {
     'int': 'TINT',
     'bool': 'BOOL',
     'char': 'CHAR',
+    'void': 'VOID',
     'true': 'TRUE',
     'false': 'FALSE',
     'endl': 'ENDL',
@@ -186,8 +187,12 @@ def p_statement(t):
 
 
 def p_return_statement(t):
-    '''return_statement : RETURN expression SEMICOLON'''
-    t[0] = ReturnNode(t[2])
+    '''return_statement : RETURN expression SEMICOLON
+                       | RETURN SEMICOLON'''
+    if len(t) > 3:
+        t[0] = ReturnNode(t[2])
+    else:
+        t[0] = ReturnNode(None)
 
 
 def p_expr_statement(t):
@@ -375,7 +380,8 @@ def p_identification(t):
 def p_type(t):
     '''type : TINT
             | BOOL
-            | CHAR'''
+            | CHAR
+            | VOID'''
     t[0] = t[1]
 
 
