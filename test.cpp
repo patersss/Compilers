@@ -13,7 +13,7 @@ bool isEven(int num) {
 int processValues(int x, char c, bool b) {
     // Проверка бинарных операций
     int result1 = x + 5;        // OK: int + int
-    char result2 = c + 1;       // OK: char + int
+    int result2 = c + 1;       // OK: char + int
     
     // Проверка присваиваний
     int num = 10;               // OK: int = int
@@ -42,7 +42,7 @@ void checkConditions(int x, char c) {
     
     // Проверка for
     for (int i = 0; i < 5; i++) {
-        char ch = 'a' + i;
+        int ch = 'a' + i;
     }
 }
 

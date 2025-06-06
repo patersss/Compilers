@@ -1,5 +1,6 @@
 from cTreeParser import *
 from semantic_analyzer import SemanticAnalyzer
+from code_generator import CodeGenerator
 import os
 import sys
 from ast_visualizer import visualize_ast
@@ -25,6 +26,20 @@ def analyze_code(code: str) -> None:
                 print(f"- {error}")
         else:
             print("\nСемантических ошибок не найдено")
+        
+        # Генерируем MSIL код
+        print("\n" + "="*50)
+        print("ГЕНЕРАЦИЯ MSIL КОДА")
+        print("="*50)
+        
+        generator = CodeGenerator()
+        msil_code = generator.generate(ast)
+        
+        
+        # Сохраняем MSIL код в файл
+        with open("generated.il", "w", encoding="utf-8") as f:
+            f.write(msil_code)
+        print(f"\nMSIL код сохранен в файл: generated.il")
             
     except Exception as e:
         print(f"Ошибка при анализе кода: {e}")
