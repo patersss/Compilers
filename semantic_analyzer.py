@@ -17,15 +17,15 @@ class Variable:
     is_initialized: bool = False
     scope_level: int = 0
     is_global: bool = False
-    array_type: Optional[VariableType] = None  # Тип элементов массива
-    array_size: Optional[int] = None  # Размер массива
+    array_type: Optional[VariableType] = None  
+    array_size: Optional[int] = None  
 
 class Scope:
     def __init__(self, parent: Optional['Scope'] = None):
         self.variables: Dict[str, Variable] = {}
         self.parent = parent
         self.level = 0 if parent is None else parent.level + 1
-        self.is_block_scope = False  # Флаг для блоков if, while и т.д.
+        self.is_block_scope = False  
 
     def add_variable(self, var: Variable) -> bool:
         if var.name in self.variables:
@@ -46,8 +46,7 @@ class Scope:
         var = self.get_variable(name)
         if not var:
             return False
-        # Если переменная объявлена в блоке (if, while и т.д.), 
-        # то она доступна только внутри этого блока
+        
         if var.scope_level > self.level:
             return False
         return True
@@ -60,7 +59,7 @@ class SemanticError(Exception):
 
 class SemanticAnalyzer:
     def __init__(self):
-        self.global_scope = Scope()  # Глобальная область видимости
+        self.global_scope = Scope()  
         self.current_scope = self.global_scope
         self.errors: List[SemanticError] = []
         self.in_loop = False
@@ -73,13 +72,11 @@ class SemanticAnalyzer:
         }
         self.functions: Dict[str, dict] = {}
         
-        # Словарь допустимых приведений типов
         self.type_conversions = {
-            VariableType.CHAR: {VariableType.INT},  # char можно привести к int
-            VariableType.INT: {VariableType.BOOL},  # int можно привести к bool для условий
+            VariableType.CHAR: {VariableType.INT},  
+            VariableType.INT: {VariableType.BOOL},  
         }
         
-        # Определяем допустимые операции для типов
         self.binary_operations = {
             '+': {
                 (VariableType.INT, VariableType.INT): VariableType.INT,
@@ -144,14 +141,11 @@ class SemanticAnalyzer:
 
     def analyze(self, node: AstNode) -> List[SemanticError]:
         try:
-            # Сначала собираем все функции, если это ExprListNode
             if isinstance(node, ExprListNode):
-                # Первый проход - собираем все функции
                 for child in node.childs:
                     if isinstance(child, FunctionNode):
                         self.collect_function(child)
                 
-                # Второй проход - анализируем семантику
                 for child in node.childs:
                     self.visit(child)
             else:
@@ -169,18 +163,14 @@ class SemanticAnalyzer:
 
     def visit(self, node):
         try:
-            # Если это строка-идентификатор, проверяем её существование
             if isinstance(node, str):
                 if node not in self.known_system_identifiers:
-                    # Это может быть идентификатор переменной, проверим его наличие
                     var = self.current_scope.get_variable(node)
                     if not var:
                         self.errors.append(SemanticError(f"Использование необъявленного идентификатора: {node}"))
                 return
-            # Если это число, char, bool, просто пропускаем
             if isinstance(node, (int, float, bool)):
                 return
-            # Если это None, пропускаем
             if node is None:
                 return
             # Если это не AstNode, пропускаем

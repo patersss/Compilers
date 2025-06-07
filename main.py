@@ -5,41 +5,29 @@ import os
 import sys
 from ast_visualizer import visualize_ast
 
-def print_tree(ast):
-    print("\nАбстрактное синтаксическое дерево:")
-    print(*ast, sep=os.linesep)
-
 def analyze_code(code: str) -> None:
     try:
-        # Строим AST
         ast = build_tree(code)
         visualize_ast(ast)
         
-        # Создаем анализатор и проверяем семантику
         analyzer = SemanticAnalyzer()
         errors = analyzer.analyze(ast)
         
-        # Выводим ошибки, если они есть
         if errors:
             print("\nНайдены семантические ошибки:")
             for error in errors:
                 print(f"- {error}")
         else:
             print("\nСемантических ошибок не найдено")
-        
-        # Генерируем MSIL код
-        print("\n" + "="*50)
-        print("ГЕНЕРАЦИЯ MSIL КОДА")
-        print("="*50)
-        
-        generator = CodeGenerator()
-        msil_code = generator.generate(ast)
-        
-        
-        # Сохраняем MSIL код в файл
-        with open("generated.il", "w", encoding="utf-8") as f:
-            f.write(msil_code)
-        print(f"\nMSIL код сохранен в файл: generated.il")
+            print("\n" + "="*50)
+            print("ГЕНЕРАЦИЯ MSIL КОДА")
+            print("="*50)
+            
+            generator = CodeGenerator()
+            msil_code = generator.generate(ast)            
+            with open("generated.il", "w", encoding="utf-8") as f:
+                f.write(msil_code)
+            print(f"\nMSIL код сохранен в файл: generated.il")
             
     except Exception as e:
         print(f"Ошибка при анализе кода: {e}")
@@ -52,7 +40,6 @@ def read_file(file_path: str) -> str:
         print(f"Ошибка при чтении файла: {e}")
         sys.exit(1)
 
-# Тестовые примеры
 EXAMPLES = {
     "1": {
         "name": "Дублирование глобальных переменных",
@@ -135,7 +122,6 @@ def main():
                 print("Неверный номер примера!")
                 
         elif choice == "3":
-            print("До свидания!")
             break
             
         else:

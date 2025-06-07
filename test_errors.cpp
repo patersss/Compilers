@@ -1,44 +1,44 @@
 int processValues(int x, char c, bool b) {
-    // Ошибки в бинарных операциях
-    int result1 = x + 'A';      // можем складывать int и char
-    char result2 = c + true;    // Ошибка: char + bool
-    bool result3 = b + 5;       // Ошибка: bool + int
+    int result1 = x + 'A';      
+    char result2 = c + true;    
+    bool result3 = b + 5;       
     
-    // Ошибки в присваиваниях
-    int num = 'A';              // Ошибка: int = char
-    char ch = 65;               // Ошибка: char = int
-    bool flag = 5;              // Ошибка: bool = int
+    int num = 'A';              
+    char ch = 65;               
+    bool flag = 5;              
     
     return result1;
 }
 
-// Функция с ошибками в условных операторах
 void checkConditions(int x, char c) {
-    // Ошибки в if
-    if (x > 'A') {              // Ошибка: сравнение int и char
+    if (x > 'A') {              
         int local = x;
     }
     
-    // Ошибки в while
-    while (x > true) {          // Ошибка: сравнение int и bool
+    while (x > true) {          
         x = x - 1;
     }
     
-    // Ошибки в for
-    for (int i = 0; i < 'A'; i++) { // Ошибка: сравнение int и char
-        int aa = 'a' + i;
+    for (int i = 0; i < 'A'; i++) { 
+        int aa = i + 'a';
     }
 }
 
+int check_count_of_params(int x, char c, bool b) {
+    return x + c + b;
+}
+
 int main() {
-    // Ошибки в объявлении переменных
-    int x = 'A';                // Ошибка: int = char
-    char c = 65;                // Ошибка: char = int
-    bool b = 5;                 // Ошибка: bool = int
-    
-    // Ошибки в вызовах функций
-    int result = processValues('A', 65, 5);  // Ошибка: несоответствие типов
-    checkConditions(true, 'A');             // Ошибка: несоответствие типов
+    int x = 'A';                
+    char c = 65;                
+    bool b = 5;
+    bool x = true;                 
+    int arr[5] = {1, 2, 3, 4, 5, 8};
+    char arr2[3] = {'a', 'b', true};
+    int dsda = unexisting_function();
+    bool dsa = check_count_of_params(1, 2);
+    int result = processValues('A', 65, 5);  
+    checkConditions(true, 'A');             
     
     return 0;
 } 
